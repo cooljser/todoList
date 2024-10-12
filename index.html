@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f5ff;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:not(.delete-btn) {
+            background-color: #3498db;
+        }
+
+        button:not(.delete-btn):hover {
+            background-color: #2980b9;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            margin-left: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h2 {
+            margin-top: 30px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        #completedList li {
+            background-color: #e8f6f3;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h1>Todo List</h1>
+    
+    <div>
+        <input type="text" id="todoInput" placeholder="输入新的待办事项" onkeypress="handleKeyPress(event)">
+        <button onclick="addTodo()">添加</button>
+    </div>
+    
+    <h2>待办事项</h2>
+    <ul id="todoList"></ul>
+    
+    <h2>已完成</h2>
+    <ul id="completedList"></ul>
+
+    <script>
+        let todos = [];
+        let completed = [];
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+            localStorage.setItem('completed', JSON.stringify(completed));
+        }
+
+        function loadTodos() {
+            const savedTodos = localStorage.getItem('todos');
+            const savedCompleted = localStorage.getItem('completed');
+            
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+                renderTodos();
+            }
+            
+            if (savedCompleted) {
+                completed = JSON.parse(savedCompleted);
+                renderCompleted();
+            }
+        }
+
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${todo}</span>
+                    <div>
+                        <button onclick="completeTodo(${index})">完成</button>
+                        <button onclick="deleteTodo(${index})" class="delete-btn">删除</button>
+                    </div>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        function renderCompleted() {
+            const completedList = document.getElementById('completedList');
+            completedList.innerHTML = '';
+            completed.forEach((item) => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                completedList.appendChild(li);
+            });
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            if (input.value.trim() !== '') {
+                todos.push(input.value);
+                input.value = '';
+                renderTodos();
+                saveTodos();
+            }
+        }
+
+        function completeTodo(index) {
+            const completedItem = todos.splice(index, 1)[0];
+            completed.push(completedItem);
+            renderTodos();
+            renderCompleted();
+            saveTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            renderTodos();
+            saveTodos();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                addTodo();
+            }
+        }
+
+        // 页面加载时读取数据
+        window.onload = loadTodos;
+    </script>
+</body>
+</html>
